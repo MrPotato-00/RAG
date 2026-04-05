@@ -119,6 +119,46 @@ The system is configured to run on arxiv based research papers. You can run you 
 
 See `requirements.txt` for complete list.
 
+## Models Used
+
+- SentenceTransformers (all-MiniLM-L6-v2): for embedding generation for the vectordb
+- cross-encoder/ms-marco-MiniLM-L-6-v2: for reranking task
+- Qwen/Qwen2.5-3B-Instruct: for generation of the output from the context
+- Mistral API (free) key for Evaluation purpose using the LiteLLM wrapper
+
+## API Keys supported by LiteLLM
+
+OpenAI Models
+- openai/gpt-3.5-turbo
+- openai/gpt-4
+- openai/gpt-4-turbo-preview
+- 
+Anthropic Models
+- anthropic/claude-3-opus
+- anthropic/claude-3-sonnet
+- anthropic/claude-3-haiku
+
+Google Models
+- google/gemini-pro
+- google/gemini-ultra
+
+Mistral Models
+- mistral/mistral-small
+- mistral/mistral-medium
+- mistral/mistral-large
+
+LM Studio Models
+- lm-studio/Meta-Llama-3.1-8B-Instruct-GGUF
+- lm-studio/Mistral-7B-Instruct-v0.2-GGUF
+- lm-studio/Phi-2-GGUF
+
+Ollama Models
+- ollama/llama2
+- ollama/mistral
+- ollama/codellama
+- ollama/neural-chat
+- ollama/starling-lm
+
 ## Project Structure
 
 ```
