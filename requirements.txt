@@ -1,0 +1,11 @@
+PyMuPDF 
+chromadb 
+langchain 
+langchain-huggingface 
+langchain-chroma
+langchain-community 
+pypdf 
+sentence-transformers 
+deepeval 
+litellm 
+unsloth

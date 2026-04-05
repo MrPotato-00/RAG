@@ -1,0 +1,19 @@
+{
+  [
+    {"query_id": 1,  "query": "What is the main innovation introduced in the Transformer model?", "domain": "in_domain_conceptual", "grounded_answer": "The main innovation is the introduction of the self-attention mechanism, which replaces recurrent and convolutional layers entirely."},
+    {"query_id": 2,  "query": "Why is the paper titled 'Attention Is All You Need'?", "domain": "in_domain_conceptual", "grounded_answer": "The title reflects that a model based solely on attention mechanisms, without recurrence or convolution, is sufficient for state-of-the-art performance."},
+    {"query_id": 3,  "query": "How does the Transformer architecture handle sequential data without recurrence?", "domain": "in_domain_technical", "grounded_answer": "Through positional encodings and self-attention, which captures dependencies between all positions simultaneously."},
+    {"query_id": 4,  "query": "What are the two main sub-layers in each encoder layer of the Transformer?", "domain": "in_domain_technical", "grounded_answer": "Multi-head self-attention and a position-wise feed-forward network, each followed by layer normalization."},
+    {"query_id": 5,  "query": "What is multi-head attention and why is it beneficial?", "domain": "in_domain_technical", "grounded_answer": "Runs multiple attention functions in parallel across projected subspaces, capturing diverse relationship types."},
+    {"query_id": 6,  "query": "What problem do positional encodings solve in the Transformer?", "domain": "in_domain_conceptual", "grounded_answer": "They inject sequence-order information since the model has no built-in notion of token position."},
+    {"query_id": 7,  "query": "What was the BLEU score achieved by the Transformer on WMT 2014 English-to-German?", "domain": "in_domain_results", "grounded_answer": "The base model scored 27.3 BLEU; the big model scored 28.4, surpassing previous ensembles."},
+    {"query_id": 8,  "query": "What is the purpose of masking in the decoder's self-attention layer?", "domain": "in_domain_technical", "grounded_answer": "Prevents positions from attending to future tokens, preserving the autoregressive property."},
+    {"query_id": 9,  "query": "Which optimizer and learning rate schedule was used to train the Transformer?", "domain": "in_domain_technical", "grounded_answer": "Adam with β1=0.9, β2=0.98, ε=10e-9 and a warmup then inverse-square-root decay schedule."},
+    {"query_id": 10, "query": "Who are the authors of the 'Attention Is All You Need' paper?", "domain": "in_domain_metadata", "grounded_answer": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin."},
+    {"query_id": 11, "query": "What is the current market capitalization of Google?", "domain": "out_of_domain_general", "grounded_answer": "Not available in the documents."},
+    {"query_id": 12, "query": "Can you provide a chocolate chip cookie recipe?", "domain": "out_of_domain_culinary", "grounded_answer": "Not available in the documents."},
+    {"query_id": 13, "query": "Explain the scaled dot-product attention formula.", "domain": "in_domain_technical", "grounded_answer": "Attention(Q,K,V)=softmax(QK^T/√d_k)V. Scaling by √d_k prevents large dot products that push softmax into low-gradient regions."},
+    {"query_id": 14, "query": "How many parameters does the Transformer base model have?", "domain": "in_domain_technical", "grounded_answer": "Approximately 65 million parameters."},
+    {"query_id": 15, "query": "What is label smoothing and why was it used?", "domain": "in_domain_technical", "grounded_answer": "A regularization technique using ε=0.1 that softens hard targets, improving BLEU even though it hurts perplexity."}
+  ]
+}

@@ -1,0 +1,8 @@
+{   
+    "document_paths": ["data/transformer_paper.pdf"],
+
+    "eval": false,
+    "eval_limit": null,
+    "eval_datapath": "data/eval.json",
+    "eval_output_path": "data/eval_output.json"
+}
