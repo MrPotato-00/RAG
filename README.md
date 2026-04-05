@@ -57,7 +57,9 @@ cd RAG
 2. Install dependencies:
 ```bash
 pip install uv
-uv sync
+uv venv
+source .venv/bin/activate
+uv pip install -r requirements.txt
 ```
 
 3. Set up environment variables:
@@ -76,9 +78,9 @@ print(result['message'])
 print(result['citations'])
 ```
 
-### Running Evaluation
+### Running Evaluation with setting eval=True in config.json
 ```python
-python evaluation.py
+python3 main.py
 ```
 
 This will load the evaluation dataset from `config.json` and run comprehensive evaluation.
