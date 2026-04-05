@@ -132,7 +132,7 @@ OpenAI Models
 - openai/gpt-3.5-turbo
 - openai/gpt-4
 - openai/gpt-4-turbo-preview
-- 
+
 Anthropic Models
 - anthropic/claude-3-opus
 - anthropic/claude-3-sonnet
