@@ -56,7 +56,9 @@ class RAGPipeline:
         scores = self.reranker.predict(pairs)
         ranked = sorted(zip(scores, docs), key=lambda x: x[0], reverse=True)
         best_score = ranked[0][0] if ranked else 0.0
-        return [doc for _, doc in ranked[:top_k]], float(best_score)
+        filtered_docs= [doc for doc_score, doc in ranked if doc_score>=self.reranker_ood_threshold]
+        #return [doc for _, doc in ranked[:top_k]], float(best_score)
+        return filtered_docs[:min(top_k, len(filtered_docs))], float(best_score)
 
     def _inference(self, messages: list[dict]) -> str:
         text = self.tokenizer.apply_chat_template(
@@ -74,31 +76,27 @@ class RAGPipeline:
         return [{
             "role":"system",
             "content": (
-            "You are a research assistant answering questions strictly based on the provided context.\n\n"
-
-            "Instructions:\n"
-            "1. Identify exact supporting statements from the context.\n"
-            "2. Use only those statements to construct your answer.\n"
-            "3. Do NOT use external knowledge.\n"
-            "4. Do NOT infer beyond what is clearly supported.\n"
-            "5. Avoid generic explanations.\n\n"
-            "6. Do NOT include additional details beyond what is explicitly asked.\n\n"
-            "7. Focus only on the part of the context that directly answers the question. Ignore unrelated details."
-            "8. Do NOT add qualifiers or extra descriptors not explicitly required (e.g., avoid words like 'solely', 'significant', 'multi-headed' unless directly needed)."
-            "9. Prefer the simpler expression of the core concepts."
-            "10. Ensure all key aspects of the answer are included if present in the context."
-            "11. If multiple components define the answer, include all of them."
-
-            "Answering Rules:\n"
-            "- Provide a concise answer.\n"
-            "- Do NOT include phrases like 'Based on the context'.\n"
-            "- Every statement MUST be supported with citation [N]."
-            "- If sufficient evidence is not present, return exactly:\n"
-            "  'Answer not found in the provided documents.'\n\n"
-
-            "Important:\n"
-            "Every part of your answer must be grounded in the context."
-
+                "You are a precise research assistant. Answer questions using ONLY the "
+                "provided sources.\n\n"
+            
+                "Example:\n"
+                "  Q: What optimizer was used?\n"
+                "  A: The model was trained with the Adam optimizer with a warmup learning "
+                "rate schedule that increased linearly for the first 4000 steps, then "
+                "decreased proportionally to the inverse square root of the step number.\n\n"
+            
+                "Answering rules:\n"
+                "1. Write clean prose — no inline citations, no bracket numbers in the answer text.\n"
+                "2. Use ONLY information explicitly present in the sources.\n"
+                "3. DO NOT paraphrase or generalize beyond what is written.\n"
+                "3. Include ALL components of the answer if they appear across multiple sources.\n"
+                "4. Do not add qualifiers, synonyms, or elaborations absent from the sources.\n"
+                "5. Do not open with 'Based on the context' or similar phrases.\n"
+                "6. Do NOT introduce explanations not explicitly present in the context. If a concept is not directly stated, do NOT infer it.\n"
+                "7. Answer using exact statements from the context. Do NOT rephrase technical reasoning.\n"
+                "8. Do not use external knowledge.\n"
+                "9. If the answer is not present in the sources, respond with exactly:\n"
+                "   'Answer not found in the provided documents.'\n"
             )
             },
             {
@@ -146,6 +144,43 @@ class RAGPipeline:
                     ))
                 break
         return kept
+
+    def _sufficient_answer_inference(self, query:str, docs: list[Document]) -> str:
+        context= "\n".join([d.page_content for d in docs])
+
+        message= f"""
+        Question: {query}
+
+        Context:
+        {context}
+
+        How confident are you that the question can be answered from the context ? Respond with ONLY a number between 0 and 1.
+
+
+        """
+        messages = [
+            {"role": "user", "content": message}
+        ]
+        text = self.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+        inputs = self.tokenizer(text, return_tensors="pt").to(self.inference_model.device)
+        outputs = self.inference_model.generate(
+            **inputs, max_new_tokens=50, temperature=0.1, do_sample=False, max_length= None
+        )
+        return self.tokenizer.decode(
+            outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True
+        )
+
+    def is_sufficient_answer(self, query: str, docs: list[Document]) -> bool:
+       
+        confidence_score_str = self._sufficient_answer_inference(query, docs).strip()
+        try:
+            confidence_score = float(confidence_score_str)
+        except ValueError:
+            
+            return False
+        return confidence_score >= 0.35 
 
     @staticmethod
     def _format_context(docs: list[Document]) -> tuple[str, list[dict]]:
@@ -204,7 +239,8 @@ class RAGPipeline:
                 best_score = float(s[0])
 
         # Out-of-domain gate
-        ood = best_score < self.reranker_ood_threshold
+        ood = len(docs)==0 or best_score < self.reranker_ood_threshold
+
         if ood:
             return {
                 "message": "Answer not found in the provided documents.",
@@ -212,6 +248,13 @@ class RAGPipeline:
                 "citations": [],
                 "ood": True
             }
+        if not self.is_sufficient_answer(query, docs):
+          return {
+              "message": "Answer not found in the provided documents.",
+              "context": [],  
+              "citations": [],
+              "ood": True
+          }
 
         # Truncate to context budget
         docs = self._truncate_to_context_budget(docs)
@@ -239,6 +282,6 @@ rag_pipeline = RAGPipeline(
     quant_tokenizer,
     vectorstore,
     reranker,
-    reranker_ood_threshold=0.05
+    reranker_ood_threshold=0.35
 )
 
