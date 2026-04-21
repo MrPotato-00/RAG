@@ -32,7 +32,8 @@ def normalize_text(text: str) -> str:
     text = re.sub(r'-\n', '', text)               
     text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)  
     text = re.sub(r'[ \t]+', ' ', text)           
-    text = re.sub(r'\n{3,}', '\n\n', text)      
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    text = re.sub(r"\[\d+\]", "", text)
     return text.strip()
 
 
@@ -131,7 +132,7 @@ def ingest_papers(pdf_paths: list[str],
 
     all_docs = []
     for path in pdf_paths:
-        all_docs.extend(chunk_paper(path))
+        all_docs.extend(chunk_paper(path, chunk_size= 300, chunk_overlap=80))
 
     vectorstore = Chroma.from_documents(
         documents=all_docs,
