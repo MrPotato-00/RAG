@@ -159,6 +159,62 @@ Ollama Models
 - ollama/neural-chat
 - ollama/starling-lm
 
+## Below are some evaluation executed using the RAG pipeline. ContextualRelevancy score needs to be improved but note that answer generation is working well. 
+```json
+[{'query': 'Why is scaling applied in the dot-product attention mechanism?',
+  'domain': 'deep_technical',
+  'ground_truth': 'Scaling prevents the dot product values from becoming too large, which would push the softmax function into regions with very small gradients and make training unstable.',
+  'generated_answer': 'Scaling applied in the dot-product attention mechanism is to make the scores comparable and to normalize the values, which is given as 1/√dk in the context.',
+  'metrics': {'faithfulness': 1.0,
+   'faithfulness_reason': 'The score is 1.00 because the actual output perfectly aligns with the retrieval context, showing no contradictions and demonstrating complete faithfulness to the provided information.',
+   'answer_relevancy': 1.0,
+   'answer_relevancy_reason': 'The score is 1.00 because the answer fully and precisely addresses the input question about the purpose of scaling in dot-product attention without any irrelevant statements or omissions.',
+   'contextual_relevancy': 0.5,
+   'contextual_relevancy_reason': "The score is 0.50 because the retrieval context partially addresses the input by mentioning the scaling factor in dot-product attention ('Dot-product attention is identical to our algorithm, except for the scaling factor of 1√dk') but fails to explain why scaling is applied, as highlighted in the reasons for irrelevancy."},
+  'ood': False},
+ {'query': 'What are the main components of a transformer encoder layer?',
+  'domain': 'conceptual',
+  'ground_truth': 'A transformer encoder layer consists of a multi-head self-attention mechanism followed by a position-wise feed-forward network, with residual connections and layer normalization applied.',
+  'generated_answer': 'A transformer encoder layer consists of a multi-head self-attention mechanism and a positionwise fully connected feed-forward network.',
+  'metrics': {'faithfulness': 1.0,
+   'faithfulness_reason': 'The score is 1.00 because the actual output perfectly aligns with the retrieval context, showing no contradictions or discrepancies.',
+   'answer_relevancy': 1.0,
+   'answer_relevancy_reason': 'The score is 1.00 because the answer perfectly addresses the input by clearly and concisely listing the main components of a transformer encoder layer without any irrelevant statements.',
+   'contextual_relevancy': 0.5,
+   'contextual_relevancy_reason': "The score is 0.50 because the retrieval context includes some relevant statements about the transformer encoder layer (e.g., 'The encoder is composed of a stack of N = 6 identical layers.' and 'Each layer has two sub-layers. The first is a multi-head self-attention mechanism...'), but it is diluted by irrelevant details about attention applications and encoder-decoder interactions (e.g., 'queries come from the previous decoder layer' and 'memory keys and values come from the output of the encoder')."},
+  'ood': False},
+ {'query': 'What is the dropout rate used in the transformer model?',
+  'domain': 'factual_detail',
+  'ground_truth': 'The dropout rate used in the transformer is 0.1.',
+  'generated_answer': 'The Transformer (big) model used a dropout rate of 0.1.',
+  'metrics': {'faithfulness': 1.0,
+   'faithfulness_reason': 'The score is 1.00 because the actual output perfectly aligns with the retrieval context with no contradictions—great job!',
+   'answer_relevancy': 1.0,
+   'answer_relevancy_reason': 'The score is 1.00 because the output perfectly addresses the input by directly answering the dropout rate used in the transformer model without any irrelevant statements.',
+   'contextual_relevancy': 0.25,
+   'contextual_relevancy_reason': "The score is 0.25 because the retrieval context only contains one marginally relevant statement ('The Transformer (big) model trained for English-to-French used dropout rate Pdrop = 0.1, instead of 0.3.') while the rest of the context is entirely irrelevant, discussing checkpoint averaging and lacking any direct mention of the dropout rate used in the transformer model."},
+  'ood': False},
+ {'query': 'What GPU model was used to train the transformer in the original paper?',
+  'domain': 'out-of-domain',
+  'ground_truth': 'The paper mentions training on multiple GPUs but does not specify the exact GPU model, so this cannot be precisely answered from the source.',
+  'generated_answer': 'Answer not found in the provided documents.',
+  'citations': [],
+  'metrics': {'faithfulness': None,
+   'answer_relevancy': None,
+   'contextual_relevancy': None},
+  'ood': True},
+ {'query': 'What is the architecture used by the deepseek-r1 model?',
+  'domain': 'out-of-domain',
+  'ground_truth': 'Answer not provided in the documents.',
+  'generated_answer': 'Answer not found in the provided documents.',
+  'citations': [],
+  'metrics': {'faithfulness': None,
+   'answer_relevancy': None,
+   'contextual_relevancy': None},
+  'ood': True}]
+
+```
+
 ## Project Structure
 
 ```
