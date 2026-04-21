@@ -7,14 +7,15 @@ from deepeval.metrics import (
 from deepeval.test_case import LLMTestCase
 from rag import rag_pipeline
 import os
+import time
 
 class DeepEvalRAGEvaluator:
-    def __init__(self, rag_pipeline, api_key: str | None):
+    def __init__(self, rag_pipeline, api_key: str | None, model_name:str):
         if api_key is None:
             raise ValueError("EVAL_API_KEY environment variable not set. ")
         
         self.llm = LiteLLMModel(
-            model="mistral/mistral-small",
+            model=model_name,
             api_key=api_key
         )
         self.rag = rag_pipeline
@@ -22,7 +23,7 @@ class DeepEvalRAGEvaluator:
         self.answer_relevancy    = AnswerRelevancyMetric(model=self.llm)
         self.contextual_relevancy = ContextualRelevancyMetric(model=self.llm)
 
-    def evaluate_dataset(self, dataset: list[dict], limit:int | None) -> list[dict]:
+    def evaluate_dataset(self, dataset: list[dict], limit:int | None, free_api=True) -> list[dict]:
         all_results = []
         if limit is not None and limit>0:
             dataset= dataset[:limit]
@@ -49,16 +50,25 @@ class DeepEvalRAGEvaluator:
                 })
                 continue
 
-            test_case = LLMTestCase(
+            faithfulness_test_case = LLMTestCase(
                 input=query,
                 actual_output=answer,
                 retrieval_context=context,
-                expected_output=ground_truth
+
+            )
+            answer_relevancy_test_case = LLMTestCase(
+                input=query,
+                actual_output=answer
+            )
+            contextual_relevancy_test_case = LLMTestCase(
+                input=query,
+                actual_output=answer,
+                retrieval_context=context
             )
 
-            self.faithfulness.measure(test_case)
-            self.answer_relevancy.measure(test_case)
-            self.contextual_relevancy.measure(test_case)
+            self.faithfulness.measure(faithfulness_test_case)
+            self.answer_relevancy.measure(answer_relevancy_test_case)
+            self.contextual_relevancy.measure(contextual_relevancy_test_case)
 
             all_results.append({
                 "query":            query,
@@ -73,11 +83,15 @@ class DeepEvalRAGEvaluator:
                 },
                 "ood": False
             })
+            if free_api:
+                print("Sleeping for 10 seconds")
+                time.sleep(10)
         return all_results
     
 
 
 rageval = DeepEvalRAGEvaluator(
     rag_pipeline=rag_pipeline,
-    api_key=os.getenv("EVAL_API_KEY")
+    api_key=os.getenv("EVAL_API_KEY"),
+    model_name= "mistral/mistral-small"
 )
