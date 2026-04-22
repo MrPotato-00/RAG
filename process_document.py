@@ -9,6 +9,8 @@ import re
 import os
 import unicodedata
 import json
+from rank_bm25 import BM25Okapi
+
 
 
 ## loading the embedding model from huggingface
