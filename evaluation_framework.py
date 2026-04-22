@@ -10,10 +10,7 @@ import os
 import time
 
 class DeepEvalRAGEvaluator:
-    def __init__(self, rag_pipeline, api_key: str | None, model_name:str):
-        if api_key is None:
-            raise ValueError("EVAL_API_KEY environment variable not set. ")
-        
+    def __init__(self, rag_pipeline, api_key: str, model_name: str):
         self.llm = LiteLLMModel(
             model=model_name,
             api_key=api_key
@@ -23,24 +20,24 @@ class DeepEvalRAGEvaluator:
         self.answer_relevancy    = AnswerRelevancyMetric(model=self.llm)
         self.contextual_relevancy = ContextualRelevancyMetric(model=self.llm)
 
-    def evaluate_dataset(self, dataset: list[dict], limit:int | None, free_api=True) -> list[dict]:
+    def evaluate_dataset(self, dataset: list[dict], free_api=True) -> list[dict]:
         all_results = []
-        if limit is not None and limit>0:
-            dataset= dataset[:limit]
         for sample in dataset:
             query        = sample["query"]
             ground_truth = sample["grounded_answer"]
             domain       = sample.get("domain", "unknown")
 
-            rag_out  = self.rag.get_output(query, reranked=True, top_k= 20, reranked_topk= 3)
+            # Corrected call to get_output with dense_top_k and sparse_top_k
+            rag_out  = self.rag.get_output(query, reranked=True, dense_top_k= 10, sparse_top_k=10, reranked_topk= 3)
             answer   = rag_out["message"]
             context  = rag_out["context"]
             citations = rag_out["citations"]
 
+            # ── Skip OOD queries for metric evaluation ──
             if rag_out["ood"] or not context:
                 all_results.append({
                     "query": query, "domain": domain,
-                    "ground_truth": ground_truth,
+                    "grounded_answer": ground_truth,
                     "generated_answer": answer,
                     "citations": citations,
                     "metrics": {"faithfulness": None,
@@ -73,19 +70,24 @@ class DeepEvalRAGEvaluator:
             all_results.append({
                 "query":            query,
                 "domain":           domain,
-                "ground_truth":     ground_truth,
+                "grounded_answer":     ground_truth,
                 "generated_answer": answer,
-                "citations":        citations,
+                #"citations":        citations,
                 "metrics": {
                     "faithfulness":         self.faithfulness.score,
+                    "faithfulness_reason":  self.faithfulness.reason,
                     "answer_relevancy":     self.answer_relevancy.score,
+                    "answer_relevancy_reason": self.answer_relevancy.reason,
                     "contextual_relevancy": self.contextual_relevancy.score,
+                    "contextual_relevancy_reason": self.contextual_relevancy.reason,
                 },
                 "ood": False
             })
+
             if free_api:
-                print("Sleeping for 10 seconds")
-                time.sleep(10)
+              print("Sleeping for 10 seconds")
+              time.sleep(10)
+
         return all_results
     
 
