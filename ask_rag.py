@@ -3,8 +3,8 @@ from rag import rag_pipeline
 import sys
 
 def ask(query: str, reranked: bool = True, top_k: int = 20, reranked_topk: int = 5):
-    out = rag_pipeline.get_output(query, top_k=top_k,
-                                  reranked=reranked, reranked_topk=reranked_topk)
+    out  = self.rag.get_output(query, reranked=True, dense_top_k= 10, sparse_top_k=10, reranked_topk= 3)
+
     print(f"Q: {query}")
     print(f"\nA: {out['message']}")
     print(f"\nContext: {out['context']}")
