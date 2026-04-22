@@ -119,7 +119,7 @@ def chunk_paper(pdf_path: str,
     return documents
 
 
-def ingest_papers(pdf_paths: list[str],
+def ingest_papers(pdf_paths_config: list(dict),
                   db_name: str = "my_chroma_db") -> tuple[Chroma, BM25Okapi, list[Document]]:
     """
     Ingest one or more PDFs into a fresh Chroma vectorstore and build a BM25 index.
@@ -131,11 +131,9 @@ def ingest_papers(pdf_paths: list[str],
                embedding_function=embed_model).delete_collection()
 
     all_docs = []
-    for path in pdf_paths:
-      if path=='transformer_paper.pdf':
-        all_docs.extend(chunk_paper(path, chunk_size= 550, chunk_overlap=150))
-      else:
-        all_docs.extend(chunk_paper(path, chunk_size= 500, chunk_overlap=100))
+    for doc_config in pdf_paths_config:
+        all_docs.extend(chunk_paper(doc_config['path'], chunk_size= doc_config['chunk_size'], chunk_overlap=doc_config['chunk_overlap']))
+      
 
     vectorstore = Chroma.from_documents(
         documents=all_docs,
