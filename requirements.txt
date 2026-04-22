@@ -9,3 +9,4 @@ sentence-transformers
 deepeval 
 litellm 
 unsloth
+rank-bm25
