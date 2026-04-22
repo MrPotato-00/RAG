@@ -12,7 +12,7 @@ import json
 
 
 ## loading the embedding model from huggingface
-embed_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+embed_model = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
 
 
 SECTION_PATTERNS = re.compile(
@@ -120,9 +120,9 @@ def chunk_paper(pdf_path: str,
 
 
 def ingest_papers(pdf_paths: list[str],
-                  db_name: str = "my_chroma_db") -> Chroma:
+                  db_name: str = "my_chroma_db") -> tuple[Chroma, BM25Okapi, list[Document]]:
     """
-    Ingest one or more PDFs into a fresh Chroma vectorstore.
+    Ingest one or more PDFs into a fresh Chroma vectorstore and build a BM25 index.
     Supports multi-paper RAG out of the box.
     """
     # Clear existing collection
@@ -132,13 +132,19 @@ def ingest_papers(pdf_paths: list[str],
 
     all_docs = []
     for path in pdf_paths:
-        all_docs.extend(chunk_paper(path, chunk_size= 300, chunk_overlap=80))
+      if path=='transformer_paper.pdf':
+        all_docs.extend(chunk_paper(path, chunk_size= 550, chunk_overlap=150))
+      else:
+        all_docs.extend(chunk_paper(path, chunk_size= 500, chunk_overlap=100))
 
     vectorstore = Chroma.from_documents(
         documents=all_docs,
         embedding=embed_model,
         persist_directory=db_name
     )
-    print(f"\nVectorstore ready: {vectorstore._collection.count()} total chunks")
-    return vectorstore
+
+    tokenized_corpus = [doc.page_content.split(" ") for doc in all_docs]
+    bm25_retriever = BM25Okapi(tokenized_corpus)
+    print(f"\nVectorstore ready: {vectorstore._collection.count()} total chunks, BM25 index built.")
+    return vectorstore, bm25_retriever, all_docs
 
