@@ -119,7 +119,7 @@ def chunk_paper(pdf_path: str,
     return documents
 
 
-def ingest_papers(pdf_paths_config: list(dict),
+def ingest_papers(pdf_paths_config: list[dict],
                   db_name: str = "my_chroma_db") -> tuple[Chroma, BM25Okapi, list[Document]]:
     """
     Ingest one or more PDFs into a fresh Chroma vectorstore and build a BM25 index.
