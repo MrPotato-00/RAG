@@ -294,7 +294,7 @@ class RAGPipeline:
 
     
 vectorstore, bm25_retriever, all_docs= ingest_papers(
-    pdf_paths_config= json.load(open("config.json"))['document_paths'],
+    pdf_paths_config= json.load(open("config.json"))['document_configs'],
     db_name= "my_chroma_db"
 )
 rag_pipeline = RAGPipeline(
