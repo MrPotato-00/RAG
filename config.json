@@ -1,8 +1,26 @@
-{   
-    "document_paths": ["data/transformer_paper.pdf"],
-
-    "eval": false,
+{
+    "eval": true,
     "eval_limit": null,
-    "eval_datapath": "data/eval.json",
-    "eval_output_path": "data/eval_output.json"
+    "free_api": true,
+    "eval_config": {
+        "model_name": "mistral/mistral-small"
+    },
+    "documents": [
+        {
+            "name": "transformer",
+            "pdf_path": "data/transformer_paper.pdf",
+            "chunk_size": 550,
+            "chunk_overlap": 100,
+            "eval_data_path": "data/transformer.json",
+            "eval_output_path": "data/transformer_eval_output.json"
+        },
+        {
+            "name": "bert",
+            "pdf_path": "data/BERT.pdf",
+            "chunk_size": 500,
+            "chunk_overlap": 100,
+            "eval_data_path": "data/bert.json",
+            "eval_output_path": "data/bert_eval_output.json"
+        }
+    ]
 }

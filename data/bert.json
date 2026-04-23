@@ -1,0 +1,32 @@
+[
+  {
+    "query_id": 1,
+    "query": "What is the main idea behind BERT?",
+    "domain": "conceptual",
+    "grounded_answer": "BERT is a bidirectional transformer model pre-trained using masked language modeling and next sentence prediction to learn deep contextual representations."
+  },
+  {
+    "query_id": 2,
+    "query": "What is masked language modeling in BERT?",
+    "domain": "deep_technical",
+    "grounded_answer": "Masked language modeling is a pre-training objective where some tokens are masked and the model is trained to predict the original tokens based on context."
+  },
+  {
+    "query_id": 3,
+    "query": "How is input represented in BERT?",
+    "domain": "deep_technical",
+    "grounded_answer": "Input representation in BERT is the sum of token embeddings, segment embeddings, and position embeddings."
+  },
+  {
+    "query_id": 4,
+    "query": "How does BERT handle positional information?",
+    "domain": "cross_paper_confusion",
+    "grounded_answer": "BERT uses learned positional embeddings added to token embeddings."
+  },
+  {
+    "query_id": 5,
+    "query": "What is the architecture used by the GPT-4 model?",
+    "domain": "out_of_domain",
+    "grounded_answer": "Answer not found in the provided documents."
+  }
+]

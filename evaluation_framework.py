@@ -5,9 +5,10 @@ from deepeval.metrics import (
     ContextualRelevancyMetric,
 )
 from deepeval.test_case import LLMTestCase
-from rag import rag_pipeline
+import json
 import os
 import time
+
 
 class DeepEvalRAGEvaluator:
     def __init__(self, rag_pipeline, api_key: str, model_name: str):
@@ -27,13 +28,11 @@ class DeepEvalRAGEvaluator:
             ground_truth = sample["grounded_answer"]
             domain       = sample.get("domain", "unknown")
 
-            # Corrected call to get_output with dense_top_k and sparse_top_k
             rag_out  = self.rag.get_output(query, reranked=True, dense_top_k= 10, sparse_top_k=10, reranked_topk= 3)
             answer   = rag_out["message"]
             context  = rag_out["context"]
             citations = rag_out["citations"]
 
-            # ── Skip OOD queries for metric evaluation ──
             if rag_out["ood"] or not context:
                 all_results.append({
                     "query": query, "domain": domain,
@@ -41,8 +40,11 @@ class DeepEvalRAGEvaluator:
                     "generated_answer": answer,
                     "citations": citations,
                     "metrics": {"faithfulness": None,
+                                "faithfulness_reason": None,
                                 "answer_relevancy": None,
-                                "contextual_relevancy": None},
+                                "answer_relevancy_reason": None,
+                                "contextual_relevancy": None,
+                                "contextual_relevancy_reason": None},
                     "ood": True
                 })
                 continue
@@ -51,7 +53,6 @@ class DeepEvalRAGEvaluator:
                 input=query,
                 actual_output=answer,
                 retrieval_context=context,
-
             )
             answer_relevancy_test_case = LLMTestCase(
                 input=query,
@@ -70,9 +71,8 @@ class DeepEvalRAGEvaluator:
             all_results.append({
                 "query":            query,
                 "domain":           domain,
-                "grounded_answer":     ground_truth,
+                "grounded_answer": ground_truth,
                 "generated_answer": answer,
-                #"citations":        citations,
                 "metrics": {
                     "faithfulness":         self.faithfulness.score,
                     "faithfulness_reason":  self.faithfulness.reason,
@@ -85,15 +85,23 @@ class DeepEvalRAGEvaluator:
             })
 
             if free_api:
-              print("Sleeping for 10 seconds")
-              time.sleep(10)
+                print("Sleeping for 10 seconds")
+                time.sleep(10)
 
         return all_results
+
+
+def create_evaluator(rag_pipeline, config: dict) -> DeepEvalRAGEvaluator:
+    eval_config = config.get("eval_config", {})
+    api_key= os.getenv("EVAL_API_KEY")
     
-
-
-rageval = DeepEvalRAGEvaluator(
-    rag_pipeline=rag_pipeline,
-    api_key=os.getenv("EVAL_API_KEY"),
-    model_name= "mistral/mistral-small"
-)
+    
+    if not api_key:
+        raise ValueError("API key not found. Set EVAL_API_KEY or OPENROUTER_API_KEY environment variable.")
+    
+    return DeepEvalRAGEvaluator(
+        rag_pipeline=rag_pipeline,
+        api_key=api_key,
+        model_name=eval_config.get("model_name", "mistral/mistral-small"),
+        
+    )

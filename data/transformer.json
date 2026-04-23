@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "query": "Why is scaling applied in the dot-product attention mechanism?",
+    "grounded_answer": "Scaling prevents the dot product values from becoming too large, which would push the softmax function into regions with very small gradients and make training unstable.",
+    "domain": "deep_technical"
+  },
+  {
+    "id": 2,
+    "query": "What are the main components of a transformer encoder layer?",
+    "grounded_answer": "A transformer encoder layer consists of a multi-head self-attention mechanism followed by a position-wise feed-forward network, with residual connections and layer normalization applied.",
+    "domain": "conceptual"
+  },
+  {
+    "id": 3,
+    "query": "What is the dropout rate used in the transformer model?",
+    "grounded_answer": "The dropout rate used in the transformer is 0.1.",
+    "domain": "factual_detail"
+  },
+  {
+    "id": 4,
+    "query": "What GPU model was used to train the transformer in the original paper?",
+    "grounded_answer": "The paper mentions training on multiple GPUs but does not specify the exact GPU model, so this cannot be precisely answered from the source.",
+    "domain": "out-of-domain"
+  },
+  {
+    "id": 5,
+    "query": "What is the architecture used by the deepseek-r1 model?",
+    "grounded_answer": "Answer not provided in the documents.",
+    "domain": "out-of-domain"
+  }
+]

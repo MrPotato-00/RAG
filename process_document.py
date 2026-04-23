@@ -134,7 +134,7 @@ def ingest_papers(pdf_paths_config: list[dict],
 
     all_docs = []
     for doc_config in pdf_paths_config:
-        all_docs.extend(chunk_paper(doc_config['path'], chunk_size= doc_config['chunk_size'], chunk_overlap=doc_config['chunk_overlap']))
+        all_docs.extend(chunk_paper(doc_config['pdf_path'], chunk_size= doc_config['chunk_size'], chunk_overlap=doc_config['chunk_overlap']))
       
 
     vectorstore = Chroma.from_documents(
