@@ -4,13 +4,15 @@ A Retrieval-Augmented Generation (RAG) system for answering questions based on r
 
 ## Overview
 
-This project implements a complete RAG pipeline that processes PDF documents, retrieves relevant information, and generates accurate answers using a large language model. It includes out-of-domain detection, reranking for improved relevance, and comprehensive evaluation using established metrics.
+This project implements a complete RAG pipeline that processes PDF documents, retrieves relevant information, and generates accurate answers using a large language model. It includes out-of-domain detection, reranking for improved relevance, and comprehensive evaluation using established metrics. 
+Note: Go through the DECISION.md file to understand the various decisions and failures faced while undertaking this project. This is not a production grade project but helped me understand that building a RAG workflow is not only about retrieval and generation. A whole lot of engineering decision goes behind to be able to generate grounded answers to a query. Hope you enjoy the read.
 
 ## Features
 
 - **Document Processing**: Automatic PDF ingestion with intelligent chunking and metadata extraction
 - **Vector Search**: Efficient similarity search using Chroma vectorstore and sentence embeddings
 - **Reranking**: Cross-encoder-based reranking for improved retrieval quality
+- **BM25**: Applied lexical search along with semantic search to get more relevant context retrieval
 - **Out-of-Domain Detection**: Automatic detection of queries outside the document scope
 - **Citation Support**: Numbered citations in generated answers for traceability
 - **Evaluation Framework**: Comprehensive evaluation using DeepEval metrics (Faithfulness, Answer Relevancy, Contextual Relevancy)
@@ -26,7 +28,7 @@ This project implements a complete RAG pipeline that processes PDF documents, re
 - Store chunks in Chroma vectorstore with rich metadata (source, page, section)
 
 ### 2. Retrieval and Reranking
-- Perform similarity search to retrieve top-k relevant chunks
+- Perform hybrid search (vector search + BM25) to retrieve top-k relevant chunks
 - Apply cross-encoder reranking to improve result quality
 - Detect out-of-domain queries using reranker confidence scores
 - Truncate context to fit model token limits
