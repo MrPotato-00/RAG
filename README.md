@@ -4,7 +4,7 @@ A Retrieval-Augmented Generation (RAG) system for answering questions based on r
 
 ## Overview
 
-This project implements a complete RAG pipeline that processes PDF documents, retrieves relevant information, and generates accurate answers using a large language model. It includes out-of-domain detection, reranking for improved relevance, and comprehensive evaluation using established metrics. 
+This project implements a complete RAG pipeline that processes PDF documents, retrieves relevant information, and generates accurate answers using a large language model. It includes out-of-domain detection, reranking for improved relevance, and comprehensive evaluation using established metrics.  
 Note: Go through the DECISION.md file to understand the various decisions and failures faced while undertaking this project. This is not a production grade project but helped me understand that building a RAG workflow is not only about retrieval and generation. A whole lot of engineering decision goes behind to be able to generate grounded answers to a query. Hope you enjoy the read.
 
 ## Features
