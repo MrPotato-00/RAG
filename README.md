@@ -123,7 +123,7 @@ See `requirements.txt` for complete list.
 
 ## Models Used
 
-- SentenceTransformers (all-MiniLM-L6-v2): for embedding generation for the vectordb
+- HuggingFaceEmbedding (BAAI/bge-base-en-v1.5): for embedding generation for the vectordb
 - cross-encoder/ms-marco-MiniLM-L-6-v2: for reranking task
 - Qwen/Qwen2.5-3B-Instruct: for generation of the output from the context
 - Mistral API (free) key for Evaluation purpose using the LiteLLM wrapper
