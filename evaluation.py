@@ -1,12 +1,12 @@
 import json
 from evaluation_framework import create_evaluator
-from rag import rag_pipeline
 
 
-def evaluate_document(doc_config: dict, evaluator, free_api: bool):
+def evaluate_document(doc_config: dict, evaluator, free_api: bool,
+                      default_eval_limit: int | None = None):
     eval_data = json.load(open(doc_config['eval_data_path']))
     
-    eval_limit = doc_config.get('eval_limit')
+    eval_limit = doc_config.get('eval_limit', default_eval_limit)
     
     
     if eval_limit:
@@ -34,9 +34,12 @@ def evaluate_document(doc_config: dict, evaluator, free_api: bool):
     print(f"Evaluation for {doc_config['name']} complete. Results saved to {output_path}")
 
 
-def evaluate():
-    config = json.load(open('config.json'))
+def evaluate(config_path: str = "config.json"):
+    from rag import create_pipeline
+
+    config = json.load(open(config_path))
     free_api = config.get('free_api', True)
+    rag_pipeline = create_pipeline(config_path, evaluation=True)
     evaluator = create_evaluator(rag_pipeline, config)
     
     documents = config.get('documents', [])
@@ -48,4 +51,9 @@ def evaluate():
         print(f"\n{'='*50}")
         print(f"Evaluating: {doc_config['name']}")
         print(f"{'='*50}")
-        evaluate_document(doc_config, evaluator, free_api)
+        evaluate_document(
+            doc_config,
+            evaluator,
+            free_api,
+            default_eval_limit=config.get('eval_limit'),
+        )

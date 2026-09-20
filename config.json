@@ -1,7 +1,28 @@
 {
-    "eval": true,
+    "eval": false,
     "eval_limit": null,
     "free_api": true,
+    "index": {
+        "persist_directory": "my_chroma_db"
+    },
+    "models": {
+        "embedding": "BAAI/bge-base-en-v1.5",
+        "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "generation": {
+            "name": "Qwen/Qwen2.5-3B-Instruct",
+            "max_seq_length": 2048,
+            "load_in_4bit": true,
+            "max_new_tokens": 400,
+            "temperature": 0.1,
+            "do_sample": true
+        }
+    },
+    "retrieval": {
+        "dense_top_k": 10,
+        "sparse_top_k": 10,
+        "reranked_topk": 3,
+        "reranker_ood_threshold": 0.35
+    },
     "eval_config": {
         "model_name": "mistral/mistral-small"
     },

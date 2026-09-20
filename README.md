@@ -14,7 +14,7 @@ Note: Go through the DECISION.md file to understand the various decisions and fa
 - **Reranking**: Cross-encoder-based reranking for improved retrieval quality
 - **BM25**: Applied lexical search along with semantic search to get more relevant context retrieval
 - **Out-of-Domain Detection**: Automatic detection of queries outside the document scope
-- **Citation Support**: Numbered citations in generated answers for traceability
+- **Citation Support**: Structured source metadata returned separately from answers
 - **Evaluation Framework**: Comprehensive evaluation using DeepEval metrics (Faithfulness, Answer Relevancy, Contextual Relevancy)
 - **Configurable**: JSON-based configuration for easy customization
 
@@ -36,7 +36,7 @@ Note: Go through the DECISION.md file to understand the various decisions and fa
 ### 3. Answer Generation
 - Use quantized LLM (Qwen2.5-3B) for answer generation
 - Strict prompting to ensure answers are grounded in provided context
-- Include numbered citations for source verification
+- Return source metadata separately for verification
 - Handle out-of-domain queries gracefully
 
 ### 4. Evaluation
@@ -71,21 +71,30 @@ export EVAL_API_KEY=your_eval_api_key
 
 ## Usage
 
-### Basic RAG Query
-```python
-from rag import rag_pipeline
+### Build the local index
 
-result = rag_pipeline.get_output("What is the main innovation in transformers?")
-print(result['message'])
-print(result['citations'])
+```bash
+python3 main.py ingest --config config.json
 ```
 
-### Running Evaluation with setting eval=True in config.json
-```python
-python3 main.py
+Existing indexes are protected by default. Pass `--rebuild` only when you intend
+to replace the configured index.
+
+### Ask questions
+
+```bash
+python3 main.py ask "What is the main innovation in transformers?"
+python3 main.py chat
 ```
 
-This will load the evaluation dataset from `config.json` and run comprehensive evaluation.
+### Run evaluation
+
+```bash
+EVAL_API_KEY=your_eval_api_key python3 main.py evaluate --config config.json
+```
+
+Evaluation loads the datasets configured in `config.json` and may consume API
+credits. Normal ingestion and querying do not require `EVAL_API_KEY`.
 
 ## Configuration
 
@@ -93,20 +102,25 @@ The system is configured via `config.json`:
 
 - It contains a list of evaluation samples with queries, ground truth answers, and domains
 
-Example configuration:
+Minimal document configuration:
 ```json
 {
-  [
+  "index": {"persist_directory": "my_chroma_db"},
+  "documents": [
     {
-      "query": "What is self-attention?",
-      "grounded_answer": "Self-attention is a mechanism...",
-      "domain": "in_domain_technical"
+      "name": "transformer",
+      "pdf_path": "data/transformer_paper.pdf",
+      "chunk_size": 550,
+      "chunk_overlap": 100,
+      "eval_data_path": "data/transformer.json",
+      "eval_output_path": "data/transformer_eval_output.json"
     }
   ]
 }
-
-The system is configured to run on arxiv based research papers. You can run you evaluation on preferred datasource (pdf) with custom set of evaluation query-answer pairs. 
 ```
+
+The system is configured for arXiv-style research papers. Chunk size and overlap
+are selected per document and should be tuned with evaluation data.
 
 ## Dependencies
 

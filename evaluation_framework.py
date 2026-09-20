@@ -28,7 +28,7 @@ class DeepEvalRAGEvaluator:
             ground_truth = sample["grounded_answer"]
             domain       = sample.get("domain", "unknown")
 
-            rag_out  = self.rag.get_output(query, reranked=True, dense_top_k= 10, sparse_top_k=10, reranked_topk= 3)
+            rag_out = self.rag.get_output(query, reranked=True)
             answer   = rag_out["message"]
             context  = rag_out["context"]
             citations = rag_out["citations"]

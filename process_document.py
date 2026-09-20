@@ -1,20 +1,13 @@
 from pypdf import PdfReader
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from sentence_transformers import CrossEncoder
-import torch
 import re
 import os
 import unicodedata
-import json
 from rank_bm25 import BM25Okapi
 
-
-
-## loading the embedding model from huggingface
-embed_model = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
+DEFAULT_EMBEDDING_MODEL = "BAAI/bge-base-en-v1.5"
 
 
 SECTION_PATTERNS = re.compile(
@@ -121,30 +114,79 @@ def chunk_paper(pdf_path: str,
     return documents
 
 
-def ingest_papers(pdf_paths_config: list[dict],
-                  db_name: str = "my_chroma_db") -> tuple[Chroma, BM25Okapi, list[Document]]:
+def create_embedding_model(model_name: str = DEFAULT_EMBEDDING_MODEL):
+    """Load the embedding model only when an index operation is requested."""
+    from langchain_huggingface import HuggingFaceEmbeddings
+
+    return HuggingFaceEmbeddings(model_name=model_name)
+
+
+def _build_bm25(documents: list[Document]) -> BM25Okapi:
+    if not documents:
+        raise ValueError("The index contains no document chunks.")
+    return BM25Okapi([doc.page_content.split() for doc in documents])
+
+
+def build_index(pdf_paths_config: list[dict],
+                db_name: str,
+                embedding_model_name: str = DEFAULT_EMBEDDING_MODEL,
+                rebuild: bool = False) -> tuple[Chroma, BM25Okapi, list[Document]]:
     """
-    Ingest one or more PDFs into a fresh Chroma vectorstore and build a BM25 index.
-    Supports multi-paper RAG out of the box.
+    Build a Chroma and BM25 index explicitly.
+
+    Existing indexes are protected unless ``rebuild`` is explicitly requested.
     """
-    # Clear existing collection
     if os.path.exists(db_name):
+        if not rebuild:
+            raise FileExistsError(
+                f"Index already exists at {db_name!r}. Use --rebuild to replace it."
+            )
+        embedding_model = create_embedding_model(embedding_model_name)
         Chroma(persist_directory=db_name,
-               embedding_function=embed_model).delete_collection()
+               embedding_function=embedding_model).delete_collection()
+    else:
+        embedding_model = create_embedding_model(embedding_model_name)
 
     all_docs = []
     for doc_config in pdf_paths_config:
         all_docs.extend(chunk_paper(doc_config['pdf_path'], chunk_size= doc_config['chunk_size'], chunk_overlap=doc_config['chunk_overlap']))
-      
+
+    if not all_docs:
+        raise ValueError("No document chunks were produced; check the configured PDFs.")
 
     vectorstore = Chroma.from_documents(
         documents=all_docs,
-        embedding=embed_model,
+        embedding=embedding_model,
         persist_directory=db_name
     )
 
-    tokenized_corpus = [doc.page_content.split(" ") for doc in all_docs]
-    bm25_retriever = BM25Okapi(tokenized_corpus)
+    bm25_retriever = _build_bm25(all_docs)
     print(f"\nVectorstore ready: {vectorstore._collection.count()} total chunks, BM25 index built.")
     return vectorstore, bm25_retriever, all_docs
 
+
+def load_index(db_name: str,
+               embedding_model_name: str = DEFAULT_EMBEDDING_MODEL
+               ) -> tuple[Chroma, BM25Okapi, list[Document]]:
+    """Load an existing Chroma index and reconstruct its in-memory BM25 index."""
+    if not os.path.exists(db_name):
+        raise FileNotFoundError(
+            f"No index found at {db_name!r}. Run the ingest command first."
+        )
+
+    vectorstore = Chroma(
+        persist_directory=db_name,
+        embedding_function=create_embedding_model(embedding_model_name),
+    )
+    stored = vectorstore.get(include=["documents", "metadatas"])
+    documents = [
+        Document(page_content=text, metadata=metadata or {})
+        for text, metadata in zip(stored["documents"], stored["metadatas"])
+    ]
+    return vectorstore, _build_bm25(documents), documents
+
+
+def ingest_papers(pdf_paths_config: list[dict],
+                  db_name: str = "my_chroma_db") -> tuple[Chroma, BM25Okapi, list[Document]]:
+    """Backward-compatible explicit index build; never overwrites an index."""
+    return build_index(pdf_paths_config, db_name)
